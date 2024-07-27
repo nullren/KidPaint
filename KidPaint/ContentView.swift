@@ -1,10 +1,3 @@
-//
-//  ContentView.swift
-//  KidPaint
-//
-//  Created by Renning Bruns on 7/27/24.
-//
-
 import SwiftUI
 import AVFoundation
 
@@ -13,15 +6,17 @@ struct ContentView: View {
     @State private var points: [CGPoint] = []
     
     var body: some View {
-        VStack {
-            ColorPicker(selectedColor: $selectedColor)
-                .padding()
-            
-            DrawingView(points: $points, selectedColor: selectedColor)
-                .background(Color.white)
-                .border(Color.gray, width: 1)
-                .padding()
+        GeometryReader { geometry in
+            VStack {
+                ColorPicker(selectedColor: $selectedColor)
+                    .padding()
+                
+                DrawingView(points: $points, selectedColor: selectedColor)
+                    .frame(width: geometry.size.width, height: geometry.size.height - 100)
+                    .background(Color.white)
+            }
         }
+        .edgesIgnoringSafeArea(.all)
     }
 }
 
@@ -30,7 +25,7 @@ struct ColorPicker: View {
     let colors: [Color] = [.red, .orange, .yellow, .green, .blue, .indigo, .purple]
 
     var body: some View {
-        HStack{
+        HStack {
             ForEach(colors, id: \.self) { color in
                 Circle()
                     .fill(color)
