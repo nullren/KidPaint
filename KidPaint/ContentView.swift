@@ -7,16 +7,19 @@ struct ContentView: View {
     
     var body: some View {
         GeometryReader { geometry in
-            VStack {
+            ZStack(alignment: .top) {
+                DrawingView(points: $points, selectedColor: selectedColor)
+                    .background(Color.white)
+                    .edgesIgnoringSafeArea(.all)
+                
                 ColorPicker(selectedColor: $selectedColor)
                     .padding()
-                
-                DrawingView(points: $points, selectedColor: selectedColor)
-                    .frame(width: geometry.size.width, height: geometry.size.height - 100)
-                    .background(Color.white)
+                    .background(Color.white.opacity(0.8))
+                    .cornerRadius(10)
+                    .shadow(radius: 5)
+                    .padding([.top], 50)
             }
         }
-        .edgesIgnoringSafeArea(.all)
     }
 }
 
