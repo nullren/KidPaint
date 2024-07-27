@@ -1,3 +1,10 @@
+//
+//  ContentView.swift
+//  KidPaint
+//
+//  Created by Renning Bruns on 7/27/24.
+//
+
 import SwiftUI
 import AVFoundation
 
