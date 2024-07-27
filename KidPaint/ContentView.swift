@@ -72,6 +72,7 @@ struct DrawingView: View {
         .gesture(
             DragGesture(minimumDistance: 0)
                 .onChanged { value in
+                    currentPath.color = selectedColor
                     currentPath.points.append(value.location)
                 }
                 .onEnded { _ in
@@ -84,13 +85,19 @@ struct DrawingView: View {
     
     private func drawPath(_ path: DrawingPath, context: GraphicsContext) {
         var drawingPath = Path()
+        let width: Double = 40
         if let firstPoint = path.points.first {
             drawingPath.move(to: firstPoint)
             for point in path.points.dropFirst() {
                 drawingPath.addLine(to: point)
             }
+            // Draw start and end circles
+            context.fill(Path(ellipseIn: CGRect(x: firstPoint.x - width/2, y: firstPoint.y - width/2, width: width, height: width)), with: .color(path.color))
+            if let lastPoint = path.points.last {
+                context.fill(Path(ellipseIn: CGRect(x: lastPoint.x - width/2, y: lastPoint.y - width/2, width: width, height: width)), with: .color(path.color))
+            }
         }
-        context.stroke(drawingPath, with: .color(path.color), lineWidth: 40)
+        context.stroke(drawingPath, with: .color(path.color), lineWidth: width)
     }
 }
 
