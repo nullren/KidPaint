@@ -1,9 +1,12 @@
 import SwiftUI
 import AVFoundation
 
+
 struct ContentView: View {
     @State private var selectedColor: Color = .red
     @State private var points: [CGPoint] = []
+    @State private var colorPickerOffset: CGSize = .zero
+    @State private var lastColorPickerOffset: CGSize = .zero
     
     var body: some View {
         GeometryReader { geometry in
@@ -17,7 +20,19 @@ struct ContentView: View {
                     .background(Color.white.opacity(0.8))
                     .cornerRadius(10)
                     .shadow(radius: 5)
-                    .padding([.top], 50)
+                    .offset(x: colorPickerOffset.width, y: colorPickerOffset.height)
+                    .gesture(
+                        DragGesture()
+                            .onChanged { value in
+                                colorPickerOffset = CGSize(
+                                    width: lastColorPickerOffset.width + value.translation.width,
+                                    height: lastColorPickerOffset.height + value.translation.height
+                                )
+                            }
+                            .onEnded { _ in
+                                lastColorPickerOffset = colorPickerOffset
+                            }
+                    )
             }
         }
     }
@@ -44,6 +59,7 @@ struct ColorPicker: View {
                     }
             }
         }
+        .padding()
     }
 }
 
