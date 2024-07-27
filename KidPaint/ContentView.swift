@@ -58,7 +58,6 @@ struct DrawingPath: Identifiable {
 struct DrawingView: View {
     @Binding var points: [CGPoint]
     var selectedColor: Color
-    @State private var isDragging: Bool = false
     
     @State private var paths: [DrawingPath] = []
     @State private var currentPath = DrawingPath()
@@ -66,15 +65,9 @@ struct DrawingView: View {
     var body: some View {
         Canvas { context, size in
             for path in paths {
-                var drawingPath = Path()
-                if let firstPoint = path.points.first {
-                    drawingPath.move(to: firstPoint)
-                    for point in path.points.dropFirst() {
-                        drawingPath.addLine(to: point)
-                    }
-                }
-                context.stroke(drawingPath, with: .color(path.color), lineWidth: 40)
+                drawPath(path, context: context)
             }
+            drawPath(currentPath, context: context)
         }
         .gesture(
             DragGesture(minimumDistance: 0)
@@ -87,6 +80,17 @@ struct DrawingView: View {
                     currentPath = DrawingPath()
                 }
         )
+    }
+    
+    private func drawPath(_ path: DrawingPath, context: GraphicsContext) {
+        var drawingPath = Path()
+        if let firstPoint = path.points.first {
+            drawingPath.move(to: firstPoint)
+            for point in path.points.dropFirst() {
+                drawingPath.addLine(to: point)
+            }
+        }
+        context.stroke(drawingPath, with: .color(path.color), lineWidth: 40)
     }
 }
 
