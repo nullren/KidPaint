@@ -49,25 +49,44 @@ struct ColorPicker: View {
     }
 }
 
+struct DrawingPath: Identifiable {
+    let id = UUID()
+    var color: Color = .red
+    var points: [CGPoint] = []
+}
+
 struct DrawingView: View {
     @Binding var points: [CGPoint]
     var selectedColor: Color
+    @State private var isDragging: Bool = false
+    
+    @State private var paths: [DrawingPath] = []
+    @State private var currentPath = DrawingPath()
     
     var body: some View {
-        GeometryReader { geometry in
-            Path { path in
-                for point in points {
-                    path.addEllipse(in: CGRect(x: point.x, y: point.y, width: 5, height: 5))
-                }
-            }
-            .stroke(selectedColor, lineWidth: 5)
-            .gesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { value in
-                        points.append(value.location)
+        Canvas { context, size in
+            for path in paths {
+                var drawingPath = Path()
+                if let firstPoint = path.points.first {
+                    drawingPath.move(to: firstPoint)
+                    for point in path.points.dropFirst() {
+                        drawingPath.addLine(to: point)
                     }
-            )
+                }
+                context.stroke(drawingPath, with: .color(path.color), lineWidth: 40)
+            }
         }
+        .gesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { value in
+                    currentPath.points.append(value.location)
+                }
+                .onEnded { _ in
+                    currentPath.color = selectedColor
+                    paths.append(currentPath)
+                    currentPath = DrawingPath()
+                }
+        )
     }
 }
 
