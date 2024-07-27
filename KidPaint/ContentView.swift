@@ -8,19 +8,39 @@
 import SwiftUI
 import AVFoundation
 
+
 struct ContentView: View {
     @State private var selectedColor: Color = .red
     @State private var points: [CGPoint] = []
+    @State private var colorPickerOffset: CGSize = .zero
+    @State private var lastColorPickerOffset: CGSize = .zero
     
     var body: some View {
-        VStack {
-            ColorPicker(selectedColor: $selectedColor)
-                .padding()
-            
-            DrawingView(points: $points, selectedColor: selectedColor)
-                .background(Color.white)
-                .border(Color.gray, width: 1)
-                .padding()
+        GeometryReader { geometry in
+            ZStack(alignment: .top) {
+                DrawingView(points: $points, selectedColor: selectedColor)
+                    .background(Color.white)
+                    .edgesIgnoringSafeArea(.all)
+                
+                ColorPicker(selectedColor: $selectedColor)
+                    .padding()
+                    .background(Color.white.opacity(0.8))
+                    .cornerRadius(10)
+                    .shadow(radius: 5)
+                    .offset(x: colorPickerOffset.width, y: colorPickerOffset.height)
+                    .gesture(
+                        DragGesture()
+                            .onChanged { value in
+                                colorPickerOffset = CGSize(
+                                    width: lastColorPickerOffset.width + value.translation.width,
+                                    height: lastColorPickerOffset.height + value.translation.height
+                                )
+                            }
+                            .onEnded { _ in
+                                lastColorPickerOffset = colorPickerOffset
+                            }
+                    )
+            }
         }
     }
 }
@@ -30,7 +50,7 @@ struct ColorPicker: View {
     let colors: [Color] = [.red, .orange, .yellow, .green, .blue, .indigo, .purple]
 
     var body: some View {
-        HStack{
+        HStack {
             ForEach(colors, id: \.self) { color in
                 Circle()
                     .fill(color)
@@ -46,28 +66,59 @@ struct ColorPicker: View {
                     }
             }
         }
+        .padding()
     }
+}
+
+struct DrawingPath: Identifiable {
+    let id = UUID()
+    var color: Color = .red
+    var points: [CGPoint] = []
 }
 
 struct DrawingView: View {
     @Binding var points: [CGPoint]
     var selectedColor: Color
     
+    @State private var paths: [DrawingPath] = []
+    @State private var currentPath = DrawingPath()
+    
     var body: some View {
-        GeometryReader { geometry in
-            Path { path in
-                for point in points {
-                    path.addEllipse(in: CGRect(x: point.x, y: point.y, width: 5, height: 5))
-                }
+        Canvas { context, size in
+            for path in paths {
+                drawPath(path, context: context)
             }
-            .stroke(selectedColor, lineWidth: 5)
-            .gesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { value in
-                        points.append(value.location)
-                    }
-            )
+            drawPath(currentPath, context: context)
         }
+        .gesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { value in
+                    currentPath.color = selectedColor
+                    currentPath.points.append(value.location)
+                }
+                .onEnded { _ in
+                    currentPath.color = selectedColor
+                    paths.append(currentPath)
+                    currentPath = DrawingPath()
+                }
+        )
+    }
+    
+    private func drawPath(_ path: DrawingPath, context: GraphicsContext) {
+        var drawingPath = Path()
+        let width: Double = 40
+        if let firstPoint = path.points.first {
+            drawingPath.move(to: firstPoint)
+            for point in path.points.dropFirst() {
+                drawingPath.addLine(to: point)
+            }
+            // Draw start and end circles
+            context.fill(Path(ellipseIn: CGRect(x: firstPoint.x - width/2, y: firstPoint.y - width/2, width: width, height: width)), with: .color(path.color))
+            if let lastPoint = path.points.last {
+                context.fill(Path(ellipseIn: CGRect(x: lastPoint.x - width/2, y: lastPoint.y - width/2, width: width, height: width)), with: .color(path.color))
+            }
+        }
+        context.stroke(drawingPath, with: .color(path.color), lineWidth: width)
     }
 }
 
