@@ -93,26 +93,39 @@ struct DrawingView: View {
     var selectedColor: Color
     
     @State private var paths: [DrawingPath] = []
-    @State private var currentPath = DrawingPath()
-    
+    @State private var firstPath = DrawingPath()
+    @State private var secondPath = DrawingPath()
+
     var body: some View {
         Canvas { context, size in
             for path in paths {
                 drawPath(path, context: context)
             }
-            drawPath(currentPath, context: context)
+            drawPath(firstPath, context: context)
+            drawPath(secondPath, context: context)
         }
         .gesture(
-            DragGesture(minimumDistance: 0)
-                .onChanged { value in
-                    currentPath.color = selectedColor
-                    currentPath.points.append(value.location)
-                }
-                .onEnded { _ in
-                    currentPath.color = selectedColor
-                    paths.append(currentPath)
-                    currentPath = DrawingPath()
-                }
+            SimultaneousGesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { value in
+                        firstPath.color = selectedColor
+                        firstPath.points.append(value.location)
+                    }
+                    .onEnded { _ in
+                        firstPath.color = selectedColor
+                        paths.append(firstPath)
+                        firstPath = DrawingPath()
+                    },
+                DragGesture(minimumDistance: 0)
+                    .onChanged { value in
+                        secondPath.color = selectedColor
+                        secondPath.points.append(value.location)
+                    }
+                    .onEnded { _ in
+                        secondPath.color = selectedColor
+                        paths.append(secondPath)
+                        secondPath = DrawingPath()
+                    })
         )
     }
     
