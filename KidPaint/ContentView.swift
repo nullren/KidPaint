@@ -11,14 +11,13 @@ import AVFoundation
 
 struct ContentView: View {
     @State private var selectedColor: Color = .blue
-    @State private var points: [CGPoint] = []
     @State private var colorPickerOffset: CGSize = .zero
     @State private var lastColorPickerOffset: CGSize = .zero
     
     var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: .top) {
-                DrawingView(points: $points, selectedColor: selectedColor)
+                DrawingView(selectedColor: selectedColor)
                     .background(Color.white)
                     .edgesIgnoringSafeArea(.all)
                 
@@ -86,35 +85,51 @@ struct ColorPicker: View {
 
 struct DrawingPath: Identifiable {
     let id = UUID()
-    var color: Color = .red
+    var color: Color = .white
     var points: [CGPoint] = []
+    
+    mutating func setColorOnce(_ color: Color) {
+        if self.color == .white {
+            self.color = color
+        }
+    }
 }
 
 struct DrawingView: View {
-    @Binding var points: [CGPoint]
     var selectedColor: Color
     
     @State private var paths: [DrawingPath] = []
-    @State private var currentPath = DrawingPath()
-    
+    @State private var firstPath = DrawingPath()
+    @State private var secondPath = DrawingPath()
+
     var body: some View {
         Canvas { context, size in
             for path in paths {
                 drawPath(path, context: context)
             }
-            drawPath(currentPath, context: context)
+            drawPath(firstPath, context: context)
+            drawPath(secondPath, context: context)
         }
         .gesture(
-            DragGesture(minimumDistance: 0)
-                .onChanged { value in
-                    currentPath.color = selectedColor
-                    currentPath.points.append(value.location)
-                }
-                .onEnded { _ in
-                    currentPath.color = selectedColor
-                    paths.append(currentPath)
-                    currentPath = DrawingPath()
-                }
+            SimultaneousGesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { value in
+                        firstPath.setColorOnce(selectedColor)
+                        firstPath.points.append(value.location)
+                    }
+                    .onEnded { _ in
+                        paths.append(firstPath)
+                        firstPath = DrawingPath()
+                    },
+                DragGesture(minimumDistance: 0)
+                    .onChanged { value in
+                        secondPath.setColorOnce(selectedColor)
+                        secondPath.points.append(value.location)
+                    }
+                    .onEnded { _ in
+                        paths.append(secondPath)
+                        secondPath = DrawingPath()
+                    })
         )
     }
     
