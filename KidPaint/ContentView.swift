@@ -58,10 +58,10 @@ struct ColorPicker: View {
                     Circle() 
                         .fill(color)
                         .frame(width: 40, height: 40)
-//                        .overlay(
-//                            Circle()
-//                                .stroke(Color.black, lineWidth: selectedColor == color ? 4 : 0)
-//                        )
+                        .overlay(
+                            Circle()
+                                .stroke(Color.black, lineWidth: selectedColor == color ? 4 : 0)
+                        )
                         .position(circularPosition(for: index, in: geometry.size))
                         .onTapGesture {
                             playBubblePopSound()
