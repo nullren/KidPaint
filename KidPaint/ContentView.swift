@@ -11,14 +11,13 @@ import AVFoundation
 
 struct ContentView: View {
     @State private var selectedColor: Color = .blue
-    @State private var points: [CGPoint] = []
     @State private var colorPickerOffset: CGSize = .zero
     @State private var lastColorPickerOffset: CGSize = .zero
     
     var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: .top) {
-                DrawingView(points: $points, selectedColor: selectedColor)
+                DrawingView(selectedColor: selectedColor)
                     .background(Color.white)
                     .edgesIgnoringSafeArea(.all)
                 
@@ -91,7 +90,7 @@ struct DrawingPath: Identifiable {
 }
 
 struct DrawingView: View {
-    @Binding var points: [CGPoint]
+    @State var points: [CGPoint] = []
     var selectedColor: Color
     
     @State private var paths: [DrawingPath] = []
