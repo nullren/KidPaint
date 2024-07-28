@@ -85,8 +85,14 @@ struct ColorPicker: View {
 
 struct DrawingPath: Identifiable {
     let id = UUID()
-    var color: Color = .red
+    var color: Color = .white
     var points: [CGPoint] = []
+    
+    mutating func setColorOnce(_ color: Color) {
+        if self.color == .white {
+            self.color = color
+        }
+    }
 }
 
 struct DrawingView: View {
@@ -108,21 +114,19 @@ struct DrawingView: View {
             SimultaneousGesture(
                 DragGesture(minimumDistance: 0)
                     .onChanged { value in
-                        firstPath.color = selectedColor
+                        firstPath.setColorOnce(selectedColor)
                         firstPath.points.append(value.location)
                     }
                     .onEnded { _ in
-                        firstPath.color = selectedColor
                         paths.append(firstPath)
                         firstPath = DrawingPath()
                     },
                 DragGesture(minimumDistance: 0)
                     .onChanged { value in
-                        secondPath.color = selectedColor
+                        secondPath.setColorOnce(selectedColor)
                         secondPath.points.append(value.location)
                     }
                     .onEnded { _ in
-                        secondPath.color = selectedColor
                         paths.append(secondPath)
                         secondPath = DrawingPath()
                     })
