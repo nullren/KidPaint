@@ -90,7 +90,6 @@ struct DrawingPath: Identifiable {
 }
 
 struct DrawingView: View {
-    @State var points: [CGPoint] = []
     var selectedColor: Color
     
     @State private var paths: [DrawingPath] = []
