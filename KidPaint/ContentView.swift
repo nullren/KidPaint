@@ -55,7 +55,7 @@ struct ColorPicker: View {
         GeometryReader { geometry in
             ZStack {
                 ForEach(Array(colors.enumerated()), id: \.element) { index, color in
-                    Circle() 
+                    Circle()
                         .fill(color)
                         .frame(width: 40, height: 40)
                         .overlay(
