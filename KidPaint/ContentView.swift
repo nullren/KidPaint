@@ -24,6 +24,7 @@ struct ContentView: View {
                 
                 ColorPicker(selectedColor: $selectedColor)
                     .padding()
+                    .frame(width: 200, height: 200)
                     .background(Color.white.opacity(0.8))
                     .cornerRadius(10)
                     .shadow(radius: 5)
@@ -48,25 +49,38 @@ struct ContentView: View {
 struct ColorPicker: View {
     @Binding var selectedColor: Color
     let colors: [Color] = [.red, .orange, .yellow, .green, .blue, .indigo, .purple]
+    let radius: CGFloat = 60 // Radius of the circular color picker
 
     var body: some View {
-        HStack {
-            ForEach(colors, id: \.self) { color in
-                Circle()
-                    .fill(color)
-                    .frame(width: 40, height: 40)
-                    .overlay(
-                        Circle()
-                            .stroke(Color.black, lineWidth: selectedColor == color ? 4 : 0)
-                    )
-                    .onTapGesture {
-                        playBubblePopSound()
-                        selectedColor = color
-                        print("color changed to \(selectedColor)")
-                    }
+        GeometryReader { geometry in
+            ZStack {
+                ForEach(Array(colors.enumerated()), id: \.element) { index, color in
+                    Circle()
+                        .fill(color)
+                        .frame(width: 40, height: 40)
+                        .overlay(
+                            Circle()
+                                .stroke(Color.black, lineWidth: selectedColor == color ? 4 : 0)
+                        )
+                        .position(circularPosition(for: index, in: geometry.size))
+                        .onTapGesture {
+                            playBubblePopSound()
+                            selectedColor = color
+                            print("color changed to \(selectedColor)")
+                        }
+                }
             }
+            .frame(width: geometry.size.width, height: geometry.size.height)
         }
-        .padding()
+    }
+
+    private func circularPosition(for index: Int, in size: CGSize) -> CGPoint {
+        let angle = (Double(index) / Double(colors.count)) * 2 * Double.pi
+        let centerX = size.width / 2
+        let centerY = size.height / 2
+        let x = centerX + radius * CGFloat(cos(angle))
+        let y = centerY + radius * CGFloat(sin(angle))
+        return CGPoint(x: x, y: y)
     }
 }
 
