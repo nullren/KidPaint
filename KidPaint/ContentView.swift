@@ -10,7 +10,7 @@ import AVFoundation
 
 
 struct ContentView: View {
-    @State private var selectedColor: Color = .red
+    @State private var selectedColor: Color = .blue
     @State private var points: [CGPoint] = []
     @State private var colorPickerOffset: CGSize = .zero
     @State private var lastColorPickerOffset: CGSize = .zero
